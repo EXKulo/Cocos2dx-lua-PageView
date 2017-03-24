@@ -2,6 +2,7 @@
 A PageView for cocos2dx in Lua Language
 
 SAMPLE:
+
     local pv = common.PageView:create(cc.size(300, 300));
     pv:setPageCount(5);
     -- create your view here
