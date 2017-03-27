@@ -45,6 +45,9 @@ end
 -- @param self
 -- @param #number count
 function PageView:setPageCount(count)
+    if count == nil or count < 1 then
+        count = 0;
+    end
     self.pageCount = count;
     return self;
 end
@@ -64,6 +67,13 @@ end
 --- @function [parent=#PageView] make
 -- @param self
 function PageView:make()
+    for _, pageNode in ipairs(self.pageNodes) do
+        pageNode:removeFromParent();
+    end
+    self.pageNodes = {};
+    if self.pageCount < 1 then
+        return;
+    end
     self.view:setContentSize(cc.size(self.pageSize.width * self.pageCount, self.pageSize.height));
     for index = 1, self.pageCount do
         local pageNode = cc.Node:create();
@@ -133,6 +143,7 @@ function PageView:getCurPageNo()
             return i;
         end
     end
+    return 0;
 end
 
 --- @function [parent=#PageView] autoRecycle
@@ -156,7 +167,6 @@ function PageView:clearNode(index)
     local pageNode = self.pageNodes[index];
     local innerNode = pageNode:getChildByName(CHILD_NAME_INNER_VIEW);
     if innerNode ~= nil then
-        print("clearing~", index)
         innerNode:removeFromParent();
     end
 end
@@ -168,7 +178,6 @@ function PageView:checkAndMakeInner(index)
     if pageNode:getChildByName(CHILD_NAME_INNER_VIEW) ~= nil then
         return;
     end
-    print("gennerate~", index)
     local innerNode = self:gennerateInner(index);
     pageNode:addChild(innerNode);
 end
@@ -202,7 +211,9 @@ function PageView:setAutoTurn()
     local function onTouchMoved(touch, event)
         local curPosX = touch:getLocation().x;
         local offsetX = curPosX - beginPosX;
-        self.view:setContentOffset(cc.p(beginContentOffsetX + offsetX, 0));
+        if math.abs(offsetX) < self.pageSize.width then
+            self.view:setContentOffset(cc.p(beginContentOffsetX + offsetX, 0));
+        end
         return true;
     end
     local listener = cc.EventListenerTouchOneByOne:create();
